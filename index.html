@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>División de gastos</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>División de gastos</h1>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="members">Miembros</button>
+            <button class="tab-btn" data-tab="expenses">Gastos</button>
+            <button class="tab-btn" data-tab="history">Historial</button>
+            <button class="tab-btn" data-tab="summary">Resumen</button>
+        </div>
+
+        <main>
+            <!-- Pestaña de Miembros -->
+            <section id="members" class="tab-content active">
+                <div class="card">
+                    <h2>Integrantes del Grupo</h2>
+                    <form id="member-form">
+                        <div class="form-group">
+                            <input type="text" id="member-name" placeholder="Nombre del integrante" required>
+                            <button type="submit" class="btn primary">Agregar</button>
+                        </div>
+                    </form>
+
+                    <div class="section-header">
+                        <h3>Integrantes (<span id="members-count">0</span>)</h3>
+                        <button id="delete-all-members" class="btn danger small">Eliminar todos</button>
+                    </div>
+                    
+                    <div id="members-list" class="list-container">
+                        <p class="empty-message">No hay integrantes. Agrega algunos para comenzar.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pestaña de Gastos -->
+            <section id="expenses" class="tab-content">
+                <div class="card">
+                    <h2>Registrar Nuevo Gasto</h2>
+                    <form id="expense-form">
+                        <div class="form-group">
+                            <label for="expense-description">Descripción</label>
+                            <textarea id="expense-description" placeholder="¿En qué se gastó?" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="expense-amount">Monto</label>
+                            <input type="number" id="expense-amount" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="paid-by">¿Quién pagó?</label>
+                            <select id="paid-by" required>
+                                <option value="" disabled selected>Selecciona una persona</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="split-header">
+                                <label>¿Entre quiénes se divide?</label>
+                                <button type="button" id="select-all" class="btn outline small">Seleccionar todos</button>
+                            </div>
+                            <div id="split-between" class="checkbox-group">
+                                <p class="empty-message">No hay integrantes. Agrega algunos en la pestaña "Miembros".</p>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn primary full-width">Registrar Gasto</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Pestaña de Historial -->
+            <section id="history" class="tab-content">
+                <div class="card">
+                    <div class="section-header">
+                        <h2>Historial de Gastos</h2>
+                        <button id="delete-all-expenses" class="btn danger small">Eliminar todos</button>
+                    </div>
+                    <div id="expenses-list" class="list-container">
+                        <p class="empty-message">No hay gastos registrados. Agrega algunos en la pestaña "Gastos".</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pestaña de Resumen -->
+            <section id="summary" class="tab-content">
+                <div class="card">
+                    <h2>Resumen de Pagos</h2>
+                    <div id="debts-summary" class="list-container">
+                        <p class="empty-message">No hay deudas pendientes entre los integrantes.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de Confirmación -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Confirmar acción</h3>
+            <p id="modal-message">¿Estás seguro de que deseas realizar esta acción?</p>
+            <div class="modal-buttons">
+                <button id="modal-cancel" class="btn outline">Cancelar</button>
+                <button id="modal-confirm" class="btn danger">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
