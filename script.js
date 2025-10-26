@@ -612,6 +612,10 @@ function loadFromLocalStorage() {
   }
 
   if (savedExpenses) {
-    expenses = JSON.parse(savedExpenses)
+    // Es crucial convertir las fechas de string a objetos Date al cargar
+    expenses = JSON.parse(savedExpenses).map(expense => ({
+      ...expense,
+      date: new Date(expense.date)
+    }));
   }
 }
