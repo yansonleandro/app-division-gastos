@@ -35,6 +35,12 @@ body {
   line-height: 1.5;
 }
 
+.text-muted {
+    font-size: 0.875rem;
+    color: var(--gray-500);
+    margin-bottom: 1rem;
+}
+
 .container {
   max-width: 800px;
   margin: 0 auto;
@@ -114,6 +120,12 @@ h3 {
   box-shadow: var(--shadow);
   padding: 1.5rem;
   margin-bottom: 1rem;
+}
+
+.card-section-divider {
+    height: 1px;
+    background-color: var(--gray-200);
+    margin: 2rem 0;
 }
 
 /* Forms */
@@ -254,9 +266,11 @@ textarea:focus {
   align-items: center;
   padding: 0.75rem;
   background-color: white;
-  border: 1px solid var(--gray-200);
+  border: 1px solid var(--gray-400);
   border-radius: var(--radius);
   margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .expense-card {
@@ -323,29 +337,92 @@ textarea:focus {
   align-items: center;
   padding: 0.75rem;
   background-color: white;
-  border: 1px solid var(--gray-200);
+  border: 1px solid var(--gray-400);
   border-radius: var(--radius);
   margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Estilos para la lista de miembros */
+.member-list-container .list-item {
+}
+
+.member-info {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.member-name {
+  font-weight: 500;
+}
+
+.member-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .debt-parties {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+  flex-grow: 1;
 }
 
 .debt-arrow {
   margin: 0 0.5rem;
-  color: var(--gray-400);
+  color: var(--primary);
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .debt-amount {
   font-weight: 600;
 }
 
+.debt-to {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.member-alias,
+.debt-alias {
+  font-size: 0.85em;
+  color: var(--gray-600);
+  background-color: var(--gray-100);
+  padding: 2px 6px;
+  border-radius: 4px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all; /* Para el resumen, por si acaso */
+}
+
 .empty-message {
   text-align: center;
   color: var(--gray-500);
   padding: 1.5rem 0;
+}
+
+@media (max-width: 480px) {
+  .debt-parties {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+  .debt-amount {
+    width: 100%;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  .member-alias, .debt-alias {
+    max-width: none; /* Permitir que el alias ocupe el ancho necesario */
+    white-space: normal;
+  }
 }
 
 /* Modal */
@@ -403,4 +480,3 @@ textarea:focus {
     margin-bottom: 0;
   }
 }
-

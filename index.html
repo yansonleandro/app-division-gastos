@@ -37,7 +37,7 @@
                         <button id="delete-all-members" class="btn danger small">Eliminar todos</button>
                     </div>
                     
-                    <div id="members-list" class="list-container">
+                    <div id="members-list" class="list-container member-list-container">
                         <p class="empty-message">No hay integrantes. Agrega algunos para comenzar.</p>
                     </div>
                 </div>
@@ -49,13 +49,13 @@
                     <h2>Registrar Nuevo Gasto</h2>
                     <form id="expense-form">
                         <div class="form-group">
-                            <label for="expense-description">Descripción</label>
-                            <textarea id="expense-description" placeholder="¿En qué se gastó?" required></textarea>
-                        </div>
-
-                        <div class="form-group">
                             <label for="expense-amount">Monto</label>
                             <input type="number" id="expense-amount" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="expense-description">Descripción</label>
+                            <textarea id="expense-description" placeholder="¿En qué se gastó?"></textarea>
                         </div>
 
                         <div class="form-group">
@@ -96,6 +96,14 @@
             <!-- Pestaña de Resumen -->
             <section id="summary" class="tab-content">
                 <div class="card">
+                    <h2>Alias para Pagos</h2>
+                    <p class="text-muted">Agrega o edita el alias bancario de las personas que deben recibir dinero.</p>
+                    <div id="creditor-alias-list" class="list-container">
+                        <p class="empty-message">Aún no hay personas que deban recibir pagos.</p>
+                    </div>
+
+                    <div class="card-section-divider"></div>
+
                     <h2>Resumen de Pagos</h2>
                     <div id="debts-summary" class="list-container">
                         <p class="empty-message">No hay deudas pendientes entre los integrantes.</p>
@@ -117,7 +125,21 @@
         </div>
     </div>
 
+    <!-- Modal para Editar Alias -->
+    <div id="alias-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="alias-modal-title">Editar Alias</h3>
+            <div class="form-group">
+                <label for="alias-input">Alias, CBU/CVU</label>
+                <input type="text" id="alias-input" placeholder="Ingresa el alias bancario">
+            </div>
+            <div class="modal-buttons">
+                <button id="alias-modal-cancel" class="btn outline">Cancelar</button>
+                <button id="alias-modal-save" class="btn primary">Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
-

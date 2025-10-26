@@ -13,6 +13,7 @@ const splitBetweenDiv = document.getElementById("split-between")
 const selectAllButton = document.getElementById("select-all")
 const expensesList = document.getElementById("expenses-list")
 const debtsSummary = document.getElementById("debts-summary")
+const creditorAliasList = document.getElementById("creditor-alias-list")
 const deleteAllMembers = document.getElementById("delete-all-members")
 const deleteAllExpenses = document.getElementById("delete-all-expenses")
 
@@ -22,6 +23,13 @@ const modalTitle = document.getElementById("modal-title")
 const modalMessage = document.getElementById("modal-message")
 const modalCancel = document.getElementById("modal-cancel")
 const modalConfirm = document.getElementById("modal-confirm")
+
+// Modal de edición de alias
+const aliasModal = document.getElementById("alias-modal")
+const aliasModalTitle = document.getElementById("alias-modal-title")
+const aliasInput = document.getElementById("alias-input")
+const aliasModalCancel = document.getElementById("alias-modal-cancel")
+const aliasModalSave = document.getElementById("alias-modal-save")
 
 // Estado de la aplicación
 let members = []
@@ -35,12 +43,14 @@ document.addEventListener("DOMContentLoaded", () => {
   renderExpenseForm()
   renderExpenses()
   calculateDebts()
+  renderCreditorAliases()
   renderDebts()
 
   // Configurar eventos
   setupTabNavigation()
   setupForms()
   setupDeleteButtons()
+  setupAliasModal()
 })
 
 // Configuración de navegación por pestañas
@@ -137,6 +147,7 @@ function setupDeleteButtons() {
         members = []
         saveToLocalStorage()
         renderMembers()
+        renderCreditorAliases()
         renderExpenseForm()
       },
     )
@@ -154,6 +165,7 @@ function setupDeleteButtons() {
         saveToLocalStorage()
         renderExpenses()
         calculateDebts()
+        renderCreditorAliases()
         renderDebts()
       },
     )
@@ -163,6 +175,28 @@ function setupDeleteButtons() {
   modalCancel.addEventListener("click", hideConfirmationModal)
 
   // El evento para modalConfirm se asigna dinámicamente en showConfirmationModal
+}
+
+// Configuración del modal de alias
+function setupAliasModal() {
+  aliasModalCancel.addEventListener("click", () => {
+    aliasModal.classList.remove("active")
+  })
+
+  aliasModalSave.addEventListener("click", () => {
+    const memberId = aliasModalSave.getAttribute("data-id")
+    const newAlias = aliasInput.value
+    const member = members.find((m) => m.id === memberId)
+
+    if (member) {
+      member.alias = newAlias.trim()
+      saveToLocalStorage()
+      renderCreditorAliases()
+      renderDebts()
+    }
+
+    aliasModal.classList.remove("active")
+  })
 }
 
 // Funciones para mostrar/ocultar el modal de confirmación
@@ -195,12 +229,24 @@ function addMember(name) {
   const newMember = {
     id: generateId(),
     name: name.trim(),
+    alias: "", // Propiedad para el alias bancario
   }
 
   members.push(newMember)
   saveToLocalStorage()
   renderMembers()
   renderExpenseForm()
+}
+
+function showAliasEditModal(id) {
+  const member = members.find((m) => m.id === id)
+  if (!member) return
+
+  aliasModalTitle.textContent = `Editar alias para ${member.name}`
+  aliasInput.value = member.alias || ""
+  aliasModalSave.setAttribute("data-id", id)
+  aliasModal.classList.add("active")
+  aliasInput.focus()
 }
 
 function removeMember(id) {
@@ -222,6 +268,7 @@ function removeMember(id) {
       members = members.filter((member) => member.id !== id)
       saveToLocalStorage()
       renderMembers()
+      renderCreditorAliases()
       renderExpenseForm()
     }
   )
@@ -242,6 +289,7 @@ function addExpense(expenseData) {
   saveToLocalStorage()
   renderExpenses()
   calculateDebts()
+  renderCreditorAliases()
   renderDebts()
 }
 
@@ -257,6 +305,7 @@ function removeExpense(id) {
       saveToLocalStorage()
       renderExpenses()
       calculateDebts()
+      renderCreditorAliases()
       renderDebts()
     }
   )
@@ -276,10 +325,8 @@ function renderMembers() {
   members.forEach((member) => {
     const memberItem = document.createElement("div")
     memberItem.className = "list-item"
-    memberItem.innerHTML = `
-            <span>${member.name}</span>
-            <button class="btn danger small delete-member" data-id="${member.id}">Eliminar</button>
-        `
+    memberItem.innerHTML = `<span>${member.name}</span>
+            <button class="btn danger small delete-member" data-id="${member.id}">Eliminar</button>`
     membersList.appendChild(memberItem)
   })
 
@@ -397,16 +444,64 @@ function renderDebts() {
     const debtItem = document.createElement("div")
     debtItem.className = "debt-item"
 
+    const creditor = members.find((m) => m.id === debt.to)
+    const creditorName = creditor ? creditor.name : "Desconocido"
+    const creditorAlias = creditor ? creditor.alias : ""
+
     debtItem.innerHTML = `
-            <div class="debt-parties">
-                <span>${getMemberName(debt.from)}</span>
-                <span class="debt-arrow">→</span>
-                <span>${getMemberName(debt.to)}</span>
-            </div>
-            <div class="debt-amount">$${debt.amount.toFixed(2)}</div>
-        `
+      <div class="debt-parties">
+        <span>${getMemberName(debt.from)}</span>
+        <span class="debt-arrow">→</span>
+        <div class="creditor-info debt-to">
+          <span>${creditorName}</span>
+          ${
+            creditorAlias ? `<span class="debt-alias">Alias: ${creditorAlias}</span>` : ""
+          }
+        </div>
+      </div>
+      <div class="debt-amount">$${debt.amount.toFixed(2)}</div>
+    `
 
     debtsSummary.appendChild(debtItem)
+  })
+}
+
+function renderCreditorAliases() {
+  const creditorIds = [...new Set(optimizedDebts.map((debt) => debt.to))]
+
+  if (creditorIds.length === 0) {
+    creditorAliasList.innerHTML = '<p class="empty-message">Aún no hay personas que deban recibir pagos.</p>'
+    return
+  }
+
+  creditorAliasList.innerHTML = ""
+
+  creditorIds.forEach((id) => {
+    const member = members.find((m) => m.id === id)
+    if (!member) return
+
+    const aliasItem = document.createElement("div")
+    aliasItem.className = "list-item"
+    aliasItem.innerHTML = `
+      <div class="member-info">
+        <span class="member-name">${member.name}</span>
+        ${member.alias ? `<span class="member-alias">Alias: ${member.alias}</span>` : ""}
+      </div>
+      <div class="member-actions">
+        <button class="btn outline small edit-alias" data-id="${member.id}">
+          ${member.alias ? "Editar Alias" : "Agregar Alias"}
+        </button>
+      </div>
+    `
+    creditorAliasList.appendChild(aliasItem)
+  })
+
+  // Agregar eventos a los botones de editar alias
+  creditorAliasList.querySelectorAll(".edit-alias").forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = button.getAttribute("data-id")
+      showAliasEditModal(id)
+    })
   })
 }
 
@@ -513,10 +608,10 @@ function loadFromLocalStorage() {
 
   if (savedMembers) {
     members = JSON.parse(savedMembers)
+    members.forEach(m => { if (m.alias === undefined) m.alias = "" }) // Compatibilidad con datos viejos
   }
 
   if (savedExpenses) {
     expenses = JSON.parse(savedExpenses)
   }
 }
-
