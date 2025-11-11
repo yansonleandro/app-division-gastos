@@ -35,6 +35,7 @@ const aliasModalSave = document.getElementById("alias-modal-save")
 let members = []
 let expenses = []
 let optimizedDebts = []
+let paidDebts = new Set() // Para rastrear deudas pagadas
 
 // Inicialización
 document.addEventListener("DOMContentLoaded", () => {
@@ -443,12 +444,18 @@ function renderDebts() {
   optimizedDebts.forEach((debt) => {
     const debtItem = document.createElement("div")
     debtItem.className = "debt-item"
+    const debtId = getDebtId(debt)
+    const isPaid = paidDebts.has(debtId)
+
+    if (isPaid) {
+      debtItem.classList.add("paid")
+    }
 
     const creditor = members.find((m) => m.id === debt.to)
     const creditorName = creditor ? creditor.name : "Desconocido"
     const creditorAlias = creditor ? creditor.alias : ""
 
-    debtItem.innerHTML = `
+    debtItem.innerHTML = `      
       <div class="debt-parties">
         <span>${getMemberName(debt.from)}</span>
         <span class="debt-arrow">→</span>
@@ -459,10 +466,29 @@ function renderDebts() {
           }
         </div>
       </div>
-      <div class="debt-amount">$${debt.amount.toFixed(2)}</div>
+      <div class="debt-actions">
+        <div class="debt-amount">$${debt.amount.toFixed(2)}</div>
+        <div class="debt-paid-toggle">
+          <input type="checkbox" id="paid-${debtId}" data-id="${debtId}" ${isPaid ? "checked" : ""}>
+        </div>
+      </div>
     `
 
     debtsSummary.appendChild(debtItem)
+  })
+
+  // Agregar eventos a los checkboxes de "saldada"
+  debtsSummary.querySelectorAll('.debt-paid-toggle input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener("change", (e) => {
+      const debtId = e.target.getAttribute("data-id")
+      if (e.target.checked) {
+        paidDebts.add(debtId)
+      } else {
+        paidDebts.delete(debtId)
+      }
+      saveToLocalStorage()
+      renderDebts() // Re-render para aplicar estilos y filtros
+    })
   })
 }
 
@@ -586,6 +612,10 @@ function getMemberName(id) {
   return member ? member.name : "Desconocido"
 }
 
+function getDebtId(debt) {
+  return `${debt.from}-${debt.to}`
+}
+
 function formatDate(date) {
   return new Intl.DateTimeFormat("es", {
     day: "2-digit",
@@ -600,11 +630,13 @@ function formatDate(date) {
 function saveToLocalStorage() {
   localStorage.setItem("dividir-gastos-members", JSON.stringify(members))
   localStorage.setItem("dividir-gastos-expenses", JSON.stringify(expenses))
+  localStorage.setItem("dividir-gastos-paid-debts", JSON.stringify(Array.from(paidDebts)))
 }
 
 function loadFromLocalStorage() {
   const savedMembers = localStorage.getItem("dividir-gastos-members")
   const savedExpenses = localStorage.getItem("dividir-gastos-expenses")
+  const savedPaidDebts = localStorage.getItem("dividir-gastos-paid-debts")
 
   if (savedMembers) {
     members = JSON.parse(savedMembers)
@@ -617,5 +649,9 @@ function loadFromLocalStorage() {
       ...expense,
       date: new Date(expense.date)
     }));
+  }
+
+  if (savedPaidDebts) {
+    paidDebts = new Set(JSON.parse(savedPaidDebts))
   }
 }
