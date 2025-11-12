@@ -381,6 +381,32 @@ textarea:focus {
   font-weight: 600;
 }
 
+.debt-payment {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.debt-paid-checkbox {
+  width: 1.15em;
+  height: 1.15em;
+  margin: 0;
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
+
+.debt-item.paid {
+  background-color: var(--gray-100);
+  border-color: var(--gray-300);
+}
+
+.debt-item.paid .debt-parties,
+.debt-item.paid .debt-amount {
+  text-decoration: line-through;
+  color: var(--gray-500);
+}
+
 .debt-to {
   display: flex;
   flex-direction: column;
@@ -414,10 +440,14 @@ textarea:focus {
     justify-content: center;
     text-align: center;
   }
-  .debt-amount {
+  .debt-payment {
+    flex-direction: column;
+    justify-content: center;
     width: 100%;
-    text-align: center;
     margin-top: 0.5rem;
+  }
+  .debt-amount {
+    /* No styles needed here anymore for mobile */
   }
   .member-alias, .debt-alias {
     max-width: none; /* Permitir que el alias ocupe el ancho necesario */

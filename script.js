@@ -459,11 +459,20 @@ function renderDebts() {
           }
         </div>
       </div>
-      <div class="debt-amount">$${debt.amount.toFixed(2)}</div>
+      <div class="debt-payment">
+        <span class="debt-amount">$${debt.amount.toFixed(2)}</span>
+        <input type="checkbox" class="debt-paid-checkbox" id="debt-${debt.from}-${debt.to}" title="Marcar como saldada">
+      </div>
     `
 
     debtsSummary.appendChild(debtItem)
   })
+
+  debtsSummary.querySelectorAll('.debt-paid-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      e.target.closest('.debt-item').classList.toggle('paid', e.target.checked);
+    });
+  });
 }
 
 function renderCreditorAliases() {
