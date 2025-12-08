@@ -104,7 +104,10 @@
 
                     <div class="card-section-divider"></div>
 
-                    <h2>Resumen de Pagos</h2>
+                    <div class="section-header">
+                        <h2>Resumen de Pagos</h2>
+                        <button id="copy-summary-btn" class="btn primary small">Copiar Resumen</button>
+                    </div>
                     <div id="debts-summary" class="list-container">
                         <p class="empty-message">No hay deudas pendientes entre los integrantes.</p>
                     </div>
@@ -137,6 +140,36 @@
                 <button id="alias-modal-cancel" class="btn outline">Cancelar</button>
                 <button id="alias-modal-save" class="btn primary">Guardar</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal para Editar Gasto -->
+    <div id="edit-expense-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="edit-expense-modal-title">Editar Gasto</h3>
+            <form id="edit-expense-form">
+                <input type="hidden" id="edit-expense-id">
+                <div class="form-group">
+                    <label for="edit-expense-amount">Monto</label>
+                    <input type="number" id="edit-expense-amount" step="0.01" min="0.01" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-expense-description">Descripción</label>
+                    <textarea id="edit-expense-description" placeholder="¿En qué se gastó?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="edit-paid-by">Pagado por</label>
+                    <select id="edit-paid-by" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Dividido entre</label>
+                    <div id="edit-split-between" class="checkbox-group"></div>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" id="edit-expense-cancel" class="btn outline">Cancelar</button>
+                    <button type="submit" class="btn primary">Guardar Cambios</button>
+                </div>
+            </form>
         </div>
     </div>
 

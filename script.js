@@ -16,6 +16,7 @@ const debtsSummary = document.getElementById("debts-summary")
 const creditorAliasList = document.getElementById("creditor-alias-list")
 const deleteAllMembers = document.getElementById("delete-all-members")
 const deleteAllExpenses = document.getElementById("delete-all-expenses")
+const copySummaryBtn = document.getElementById("copy-summary-btn")
 
 // Modal de confirmación
 const modal = document.getElementById("confirmation-modal")
@@ -31,6 +32,15 @@ const aliasInput = document.getElementById("alias-input")
 const aliasModalCancel = document.getElementById("alias-modal-cancel")
 const aliasModalSave = document.getElementById("alias-modal-save")
 
+// Modal de edición de gasto
+const editExpenseModal = document.getElementById("edit-expense-modal")
+const editExpenseForm = document.getElementById("edit-expense-form")
+const editExpenseId = document.getElementById("edit-expense-id")
+const editExpenseAmount = document.getElementById("edit-expense-amount")
+const editExpenseDescription = document.getElementById("edit-expense-description")
+const editPaidBySelect = document.getElementById("edit-paid-by")
+const editSplitBetweenDiv = document.getElementById("edit-split-between")
+const editExpenseCancel = document.getElementById("edit-expense-cancel")
 // Estado de la aplicación
 let members = []
 let expenses = []
@@ -51,6 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setupForms()
   setupDeleteButtons()
   setupAliasModal()
+  setupEditExpenseModal()
+  setupCopyButton()
 })
 
 // Configuración de navegación por pestañas
@@ -199,6 +211,92 @@ function setupAliasModal() {
   })
 }
 
+// Configuración del modal de edición de gastos
+function setupEditExpenseModal() {
+  editExpenseCancel.addEventListener("click", () => {
+    editExpenseModal.classList.remove("active")
+  })
+
+  editExpenseForm.addEventListener("submit", (e) => {
+    e.preventDefault()
+
+    const id = editExpenseId.value
+    const amount = Number.parseFloat(editExpenseAmount.value)
+    const description = editExpenseDescription.value
+    const paidBy = editPaidBySelect.value
+    const splitBetween = []
+    document.querySelectorAll('#edit-split-between input[type="checkbox"]:checked').forEach((checkbox) => {
+      splitBetween.push(checkbox.value)
+    })
+
+    if (splitBetween.length === 0) {
+      alert("Debes seleccionar al menos una persona entre quienes dividir el gasto.")
+      return
+    }
+
+    // Ocultar el modal de edición ANTES de mostrar el de confirmación
+    editExpenseModal.classList.remove("active")
+
+    showConfirmationModal(
+      "Guardar Cambios",
+      "¿Estás seguro de que deseas guardar los cambios en este gasto?",
+      () => {
+        const expenseIndex = expenses.findIndex((exp) => exp.id === id)
+        if (expenseIndex > -1) {
+          expenses[expenseIndex] = {
+            ...expenses[expenseIndex],
+            amount,
+            description,
+            paidBy,
+            splitBetween,
+          }
+
+          saveToLocalStorage()
+          renderExpenses()
+          calculateDebts()
+          renderCreditorAliases()
+          renderDebts()
+        }
+      },
+    )
+  })
+}
+
+// Configuración del botón para copiar resumen
+function setupCopyButton() {
+  copySummaryBtn.addEventListener("click", () => {
+    if (optimizedDebts.length === 0) {
+      alert("No hay deudas para copiar.")
+      return
+    }
+
+    let summaryText = ""
+    optimizedDebts.forEach((debt) => {
+      const debtorName = getMemberName(debt.from)
+      const creditor = members.find((m) => m.id === debt.to)
+      const creditorName = creditor ? creditor.name : "Desconocido"
+      const creditorAlias = creditor ? creditor.alias : ""
+      const amount = `$${Math.round(debt.amount)}`
+
+      let line = `${debtorName} ${amount} a ${creditorName}`
+      if (creditorAlias) {
+        line += ` (alias ${creditorAlias})`
+      }
+      summaryText += line + "\n"
+    })
+
+    navigator.clipboard.writeText(summaryText.trim()).then(() => {
+      const originalText = copySummaryBtn.textContent
+      copySummaryBtn.textContent = "¡Copiado!"
+      copySummaryBtn.disabled = true
+      setTimeout(() => {
+        copySummaryBtn.textContent = originalText
+        copySummaryBtn.disabled = false
+      }, 2000)
+    })
+  })
+}
+
 // Funciones para mostrar/ocultar el modal de confirmación
 function showConfirmationModal(title, message, confirmCallback) {
   modalTitle.textContent = title
@@ -247,6 +345,43 @@ function showAliasEditModal(id) {
   aliasModalSave.setAttribute("data-id", id)
   aliasModal.classList.add("active")
   aliasInput.focus()
+}
+
+function showEditExpenseModal(id) {
+  const expense = expenses.find((exp) => exp.id === id)
+  if (!expense) return
+
+  // Poblar campos básicos
+  editExpenseId.value = expense.id
+  editExpenseAmount.value = expense.amount
+  editExpenseDescription.value = expense.description
+
+  // Poblar select "Pagado por"
+  editPaidBySelect.innerHTML = ""
+  members.forEach((member) => {
+    const option = document.createElement("option")
+    option.value = member.id
+    option.textContent = member.name
+    if (member.id === expense.paidBy) {
+      option.selected = true
+    }
+    editPaidBySelect.appendChild(option)
+  })
+
+  // Poblar checkboxes "Dividido entre"
+  editSplitBetweenDiv.innerHTML = ""
+  members.forEach((member) => {
+    const checkboxItem = document.createElement("div")
+    checkboxItem.className = "checkbox-item"
+    const isChecked = expense.splitBetween.includes(member.id)
+    checkboxItem.innerHTML = `
+      <input type="checkbox" id="edit-split-${member.id}" value="${member.id}" ${isChecked ? "checked" : ""}>
+      <label for="edit-split-${member.id}">${member.name}</label>
+    `
+    editSplitBetweenDiv.appendChild(checkboxItem)
+  })
+
+  editExpenseModal.classList.add("active")
 }
 
 function removeMember(id) {
@@ -398,7 +533,10 @@ function renderExpenses() {
     expenseCard.innerHTML = `
             <div class="expense-header">
                 <span class="expense-title">${expense.description}</span>
-                <button class="btn danger small delete-expense" data-id="${expense.id}">Eliminar</button>
+                <div class="expense-actions">
+                    <button class="btn outline small edit-expense" data-id="${expense.id}">Editar</button>
+                    <button class="btn danger small delete-expense" data-id="${expense.id}">Eliminar</button>
+                </div>
             </div>
             <div class="expense-date">${formatDate(new Date(expense.date))}</div>
             <div class="expense-details">
@@ -422,11 +560,18 @@ function renderExpenses() {
     expensesList.appendChild(expenseCard)
   })
 
-  // Agregar eventos a los botones de eliminar
+  // Agregar eventos a los botones de eliminar y editar (usando delegación de eventos)
   document.querySelectorAll(".delete-expense").forEach((button) => {
     button.addEventListener("click", () => {
       const id = button.getAttribute("data-id")
       removeExpense(id)
+    })
+  })
+
+  document.querySelectorAll(".edit-expense").forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = button.getAttribute("data-id")
+      showEditExpenseModal(id)
     })
   })
 }
@@ -460,7 +605,7 @@ function renderDebts() {
         </div>
       </div>
       <div class="debt-payment">
-        <span class="debt-amount">$${debt.amount.toFixed(2)}</span>
+        <span class="debt-amount">$${Math.round(debt.amount)}</span>
         <input type="checkbox" class="debt-paid-checkbox" id="debt-${debt.from}-${debt.to}" title="Marcar como saldada">
       </div>
     `
@@ -567,7 +712,7 @@ function calculateDebts() {
       optimizedDebts.push({
         from: debtorId,
         to: creditorId,
-        amount: Math.round(transactionAmount * 100) / 100, // Redondear a 2 decimales
+        amount: transactionAmount, // Mantenemos los decimales para el cálculo, pero redondeamos al mostrar
       })
     }
 
