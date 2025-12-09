@@ -486,7 +486,23 @@ textarea:focus {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
-  margin-top: 1.5rem;
+  margin-top: 1rem; /* Reducido para mejor ajuste */
+}
+
+/* --- Estilos para Modal con Scroll --- */
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh; /* El modal nunca será más alto que el 85% de la pantalla */
+}
+
+/* El formulario dentro del modal es el que crece y se desplaza */
+.modal-content form {
+  overflow-y: auto; /* ¡La clave! Activa el scroll vertical cuando el contenido es muy largo */
+  flex-grow: 1; /* Permite que el formulario ocupe el espacio disponible */
+  margin: 1rem 0; /* Espacio entre el título y los botones */
+  padding-right: 1rem; /* Espacio para la barra de scroll para que no tape el contenido */
+  margin-right: -1rem; /* Compensa el padding para mantener la alineación */
 }
 
 /* Responsive */

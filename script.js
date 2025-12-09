@@ -62,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupDeleteButtons()
   setupAliasModal()
   setupEditExpenseModal()
+  setupEventListeners()
   setupCopyButton()
 })
 
@@ -225,7 +226,7 @@ function setupEditExpenseModal() {
     const description = editExpenseDescription.value
     const paidBy = editPaidBySelect.value
     const splitBetween = []
-    document.querySelectorAll('#edit-split-between input[type="checkbox"]:checked').forEach((checkbox) => {
+    editExpenseForm.querySelectorAll('input[type="checkbox"]:checked').forEach((checkbox) => {
       splitBetween.push(checkbox.value)
     })
 
@@ -465,13 +466,6 @@ function renderMembers() {
     membersList.appendChild(memberItem)
   })
 
-  // Agregar eventos a los botones de eliminar
-  document.querySelectorAll(".delete-member").forEach((button) => {
-    button.addEventListener("click", () => {
-      const id = button.getAttribute("data-id")
-      removeMember(id)
-    })
-  })
 }
 
 function renderExpenseForm() {
@@ -559,21 +553,6 @@ function renderExpenses() {
 
     expensesList.appendChild(expenseCard)
   })
-
-  // Agregar eventos a los botones de eliminar y editar (usando delegación de eventos)
-  document.querySelectorAll(".delete-expense").forEach((button) => {
-    button.addEventListener("click", () => {
-      const id = button.getAttribute("data-id")
-      removeExpense(id)
-    })
-  })
-
-  document.querySelectorAll(".edit-expense").forEach((button) => {
-    button.addEventListener("click", () => {
-      const id = button.getAttribute("data-id")
-      showEditExpenseModal(id)
-    })
-  })
 }
 
 function renderDebts() {
@@ -650,13 +629,36 @@ function renderCreditorAliases() {
     creditorAliasList.appendChild(aliasItem)
   })
 
-  // Agregar eventos a los botones de editar alias
-  creditorAliasList.querySelectorAll(".edit-alias").forEach((button) => {
-    button.addEventListener("click", () => {
-      const id = button.getAttribute("data-id")
-      showAliasEditModal(id)
-    })
-  })
+}
+
+// Delegación de eventos
+function setupEventListeners() {
+  // Eventos para la lista de miembros
+  membersList.addEventListener('click', (e) => {
+    if (e.target.matches('.delete-member')) {
+      const id = e.target.getAttribute('data-id');
+      removeMember(id);
+    }
+  });
+
+  // Eventos para la lista de gastos
+  expensesList.addEventListener('click', (e) => {
+    if (e.target.matches('.delete-expense')) {
+      const id = e.target.getAttribute('data-id');
+      removeExpense(id);
+    } else if (e.target.matches('.edit-expense')) {
+      const id = e.target.getAttribute('data-id');
+      showEditExpenseModal(id);
+    }
+  });
+
+  // Eventos para la lista de alias de acreedores
+  creditorAliasList.addEventListener('click', (e) => {
+    if (e.target.matches('.edit-alias')) {
+      const id = e.target.getAttribute('data-id');
+      showAliasEditModal(id);
+    }
+  });
 }
 
 // Cálculo de deudas
